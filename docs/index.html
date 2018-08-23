@@ -1,0 +1,227 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            body {
+                background-color: #FFF1CC;
+            }
+            img {
+                border:double;
+            }
+        </style>
+        <meta charset="UTF-8" />
+        <title id="title">Photo Viewer</title>	
+    </head>
+    
+    <body onload = "main()">
+        <h1><strong><u> Viewer </u></strong></h1>
+        <br>
+        <form>
+            <img id="theImage" src="InitialImage.jpg" alt="viewerImg" /><br />
+            <hr>
+            Photos' Folder: 
+            <input type="text" id="folder" value="umcp/" /><br /><br />
+            Common Name: 
+            <input type="text" id="name" value="college" /><br /><br />
+            Start Photo Number:
+            <input type="text" id="startNumber" value="1" />
+            End Photo Number:
+            <input type="text" id="endNumber" value="1" /><br /><br />
+            <input type="button" id="slideShow" value="Slide Show" />
+            <input type="button" id="random" value="Random Slide Show" />
+            <input type="button" id="previous" value="Previous Slide" />
+            <input type="button" id="next" value="Next Slide" />
+            <br /><br />
+            <input type="button" id="autoSlideShow" value="Auto Slide Show" />
+            <input type="button" id="autoRandom" value="Auto Random Slide Show" />
+            <input type="button" id="stopAuto" value="Stop Auto Show" />
+            <br /><br />
+            <input type="reset" value="Reset" />    
+	    </form>
+		    
+        <script>
+
+            function main() {
+
+                var autoID; // global intevalID for auto show
+                var randArray = []; // the global array that stores the randomized photos, 
+                // These two flags are used when entering either slide show or random slide
+                var isRandom = false;
+                var isSlide = false;
+                var buttonElement = document.getElementById("slideShow");
+                buttonElement.onclick = changeImage; 
+
+                var buttonElement = document.getElementById("random");
+                buttonElement.onclick = randChangeImage; 
+
+                var buttonElement = document.getElementById("autoSlideShow");
+                buttonElement.onclick = autoSlide; 
+
+                var buttonElement = document.getElementById("autoRandom");
+                buttonElement.onclick = autoRandom; 
+
+                var buttonElement = document.getElementById("stopAuto");
+                buttonElement.onclick = stopAuto; 
+
+                var buttonElement = document.getElementById("previous");
+                buttonElement.onclick = showPrevious; 
+
+                var buttonElement = document.getElementById("next");
+                buttonElement.onclick = showNext; 
+
+                var imageElement = document.getElementById("theImage");
+                imageElement.onclick = showNext;
+
+            }
+
+            function autoSlide() {
+                var imageElement = document.getElementById("theImage");
+                var photoArr = getArrayPhotosNames();
+                imageElement.setAttribute("src", photoArr[0]);  // initial image setup
+                autoID = setInterval("swapImages()", 1000);  
+            }
+
+            function autoRandom() {
+                var imageElement = document.getElementById("theImage");
+                var photoArr = getArrayPhotosNames();
+                randArray = [];
+                randArray = randomize(photoArr);
+                isRandom = true;
+                isSlide = false;
+                imageElement.setAttribute("src", randArray[0]);  // initial image setup
+                autoID = setInterval("randSwapImages()", 1000); 
+            }
+
+            function swapImages() {          
+                var photoArr = getArrayPhotosNames();
+                var arrSize = photoArr.length;
+                var imageElement = document.getElementById("theImage");
+                var imageName = imageElement.getAttribute("src");
+                var preIndex = photoArr.indexOf(imageName);
+                var nextImage;
+
+                if (preIndex === arrSize - 1) {
+                    nextImage = photoArr[0];
+                } else {
+                    nextImage = photoArr[preIndex + 1];
+                }
+                imageElement.setAttribute("src", nextImage);
+            }
+
+            function randSwapImages() {
+                var arrSize = randArray.length;
+                var imageElement = document.getElementById("theImage");
+                showNext();
+            }
+
+            function stopAuto() {
+                clearInterval(autoID);
+            }
+	    
+            function changeImage() {
+                var photoArr = getArrayPhotosNames();
+                isSlide = true;
+                var imageElement = document.getElementById("theImage");
+                imageElement.setAttribute("src", photoArr[0]);
+            }
+
+            function randChangeImage() {
+                var photoArr = getArrayPhotosNames();
+                isRandom = true;
+                isSlide = false;
+                randArray = [];
+                randArray = randomize(photoArr);
+                var imageElement = document.getElementById("theImage");
+                imageElement.setAttribute("src", randArray[0]);
+            }
+
+            function showPrevious() {
+                var imageElement = document.getElementById("theImage");
+                var imageName = imageElement.getAttribute("src");
+
+                if (isSlide) {
+                    // in order slide show
+                    var photoArr = getArrayPhotosNames();
+                    var currIndex = photoArr.indexOf(imageName);
+                    if (currIndex === 0) {
+                        imageElement.setAttribute("src", photoArr[photoArr.length - 1]);
+                    } else {
+                        imageElement.setAttribute("src", photoArr[currIndex - 1]);
+                    }
+                } else if (isRandom) {
+                    // random slide show
+                    var currInd = randArray.indexOf(imageName);
+                    if (currInd === 0) {
+                        imageElement.setAttribute("src", randArray[randArray.length - 1]);
+                    } else {
+                        imageElement.setAttribute("src", randArray[currInd - 1]);
+                    }
+                } else {
+                    alert("why am i here ?");
+                }
+            }
+
+            function showNext() {
+                var imageElement = document.getElementById("theImage");
+                var imageName = imageElement.getAttribute("src");
+
+                if (isSlide) {
+                    // in order slide show
+                    var photoArr = getArrayPhotosNames();
+                    var currIndex = photoArr.indexOf(imageName);
+                    if (currIndex === (photoArr.length - 1)) {
+                        imageElement.setAttribute("src", photoArr[0]);
+                    } else {
+                        imageElement.setAttribute("src", photoArr[currIndex + 1]);
+                    }
+                } else if (isRandom) {
+                    // random slide 
+                    var currInd = randArray.indexOf(imageName);
+                    if (currInd === (randArray.length - 1)) {
+                        imageElement.setAttribute("src", randArray[0]);
+                    } else {
+                        imageElement.setAttribute("src", randArray[currInd + 1]);
+                    }
+                } else {
+                    alert("why am i here ?");
+                }
+            }
+
+            function getArrayPhotosNames() {
+                var startNum = Number((document.getElementById("startNumber")).value);
+                var endNum = Number((document.getElementById("endNumber")).value);
+                if (startNum > endNum) {
+                    alert("Invalid Numbers");
+                } else {
+                    var path = (document.getElementById("folder")).value;
+                    var commonPhotoName = (document.getElementById("name")).value;
+                    var startPhoto = Number((document.getElementById("startNumber")).value);
+                    var arrSize = endNum - startNum + 1;
+                    var photoArray = [];
+                    for (i = 0; i < arrSize; i++) {
+                        photoArray[i] = path + commonPhotoName + String(startPhoto + i) + ".jpg";
+                    }
+                    return photoArray;
+                }
+            }
+
+            function randomize(dataArray) {
+                var max = dataArray.length;
+                var randArray = [];
+                for (i = 0; i < max; i++) {
+                    var randomIndex = Math.floor(Math.random() * max);
+                    if (dataArray[randomIndex] === false) {
+                        i = i - 1;
+                    } else {
+                        randArray[i] = dataArray[randomIndex];
+                        // false flag indicating this entry has been added
+                        dataArray[randomIndex] = false; 
+                    }
+                }
+             
+                return randArray;
+            }
+
+        </script>
+    </body>
+</html>
